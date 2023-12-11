@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+</head>
+<body>
+    <p> Fingerprint : <b class="js-fingerprint"></b> </p>
+    <p> Provider : <b class="js-provider">   </b>  </p>
+    <p> Category  : <b class="js-category"> </b> </p>
+    <p> Model  : <b class="js-model"> </b> </p>
+    <p> Platform  : <b class="js-platform"> </b> </p>
+    <p> Manufacturer  : <b class="js-manufacturer"> </b> </p>
+    <p> OS  : <b class="js-os"> </b> </p>
+    <p> Browser  : <b class="js-browser"> </b> </p>
+    <p> Language  : <b class="js-language"> </b> </p>
+    <p> Navigator userAgent: <b class="js-navigatorUser"> </b></p>
+  
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+       var provider = "js"
+       var category = getCategory()
+       var model = ""
+       var platform = getPlatformDevice()
+       var manufacturer = getManufacturerDevice();
+       var os = getPlatformWithVersion()
+       var browser = getBrowserName()
+       var language = navigator.language
+
+
+       document.querySelector(".js-provider").append(provider)
+       document.querySelector(".js-category").append(category)
+       document.querySelector(".js-os").append(os)
+       document.querySelector(".js-browser").append(browser)
+       document.querySelector(".js-language").append(language)
+       document.querySelector(".js-platform").append(platform)
+       document.querySelector(".js-manufacturer").append(manufacturer)
+       document.querySelector(".js-navigatorUser").append(navigator.userAgent)
+
+       fingerprint(provider,category, model, platform, manufacturer, os, browser, language)
+
+
+
+    });
+    function sha256(input) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))
+        .then(buffer => {
+             return Array.from(new Uint8Array(buffer), byte => ('0' + byte.toString(16)).slice(-2)).join('');
+        });
+    }
+    function fingerprint(provider,category, model, platform, manufacturer, os, browser, language){
+        const fingerprintData = `${provider}${category}${model}${platform}${manufacturer}${os}${browser}${language}`;
+       sha256(fingerprintData)
+        .then(hash => {
+            const fingerprint = hash;
+            document.querySelector(".js-fingerprint").append(fingerprint)
+
+        }).catch(error => {
+            console.error('Erro ao calcular o fingerprint:', error);
+        });
+
+    }
+
+    function getCategory() {
+        try {
+
+            const width = window.innerWidth;
+
+            if (width < 768 && navigator.userAgent.includes('Mobile')) {
+                return "Mobile"; 
+            } else if (width < 1024 && navigator.userAgent.includes('Mobile')) {
+                return "Tablet"; 
+            } else {
+                return "Desktop"; 
+            }
+        } catch (error) {
+            // Faça algo com a exceção, como registrar ou relatar
+            console.error("Ocorreu um erro na função getCategory:", error);
+            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
+            return "";
+         }
+    }
+
+    function getBrowserName() {
+        try {
+
+            const userAgent = navigator.userAgent;
+
+            if (/opr\//i.test(userAgent)) {
+                return 'Opera';
+            } else if (/edg/i.test(userAgent)) {
+                return 'Microsoft Edge';
+            } else if (/chrome|chromium|crios/i.test(userAgent)) {
+                return 'Google Chrome';
+            } else if (/firefox|fxios/i.test(userAgent)) {
+                return 'Mozilla Firefox';
+            } else if (/safari/i.test(userAgent)) {
+                return 'Apple Safari';
+            } else if (/trident/i.test(userAgent)) {
+                return 'Microsoft Internet Explorer';
+            } else if (/ucbrowser/i.test(userAgent)) {
+                return 'UC Browser';
+            } else if (/samsungbrowser/i.test(userAgent)) {
+                return 'Samsung Browser';
+            } else {
+                return '';
+            }
+
+        } catch (error) {
+            // Faça algo com a exceção, como registrar ou relatar
+            console.error("Ocorreu um erro na função getBrowserName:", error);
+            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
+            return "";
+         }
+    }
+
+    function getPlatformDevice() {
+        try {
+
+            const userAgent = navigator.userAgent;
+            let platform = '';
+
+            if (/Win/i.test(userAgent)) {
+                platform = 'Windows';
+            } else if (/Mac/i.test(userAgent)) {
+                platform = 'Mac';
+            } else if (/iPhone/i.test(userAgent)) {
+                platform = 'iPhone';
+            } else if (/iPad/i.test(userAgent)) {
+                platform = 'iPad';
+            } else if (/Android/i.test(userAgent)) {
+                platform = 'Android';
+            } else if (/Linux/i.test(userAgent)) {
+                platform = 'Linux';
+            }
+
+            return platform;
+        } catch (error) {
+            // Faça algo com a exceção, como registrar ou relatar
+            console.error("Ocorreu um erro na função getPlatformDevice:", error);
+            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
+            return "";
+        }
+    }
+
+    function getManufacturerDevice() {
+        try {
+
+            if (navigator.userAgent) {
+                const userAgent = navigator.userAgent;
+                if (/Android/i.test(userAgent)) {
+                    const androidManufacturerMatch = userAgent.match(/\bAndroid[^;]+; ([^)]+)\)/);
+                    return androidManufacturerMatch[1].length > 1 ? androidManufacturerMatch[1] : '';
+                } else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
+                    return 'Apple';
+                } else if (/Windows NT/i.test(userAgent)) {
+                    return 'Microsoft';
+                } else if (/Linux/i.test(userAgent)) {
+                    return 'Linux';
+                } else if (/Fedora/i.test(userAgent)) {
+                    return 'Fedora';
+                }
+            }
+            return '';
+        }catch (error) {
+            // Faça algo com a exceção, como registrar ou relatar
+            console.error("Ocorreu um erro na função getManufacturerDevice:", error);
+            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
+            return "";
+        }
+    }
+
+    function getPlatformWithVersion() {
+        try {
+
+            const userAgent = navigator.userAgent;
+            let platform = '';
+            let version = '';
+
+            if (userAgent.match(/Windows/i)) {
+                platform = 'Windows';
+                const is64Bit = userAgent.includes('Win64') || userAgent.includes('x64');
+                version = is64Bit ? '64-bit' : '32-bit';
+
+            } else if (userAgent.match(/Mac/i)) {
+                platform = 'Mac';
+                version = userAgent.match(/Mac OS X \d+\_\d+/)[0].replace(/_/g, '.');
+            } else if (userAgent.match(/iPhone/i)) {
+                platform = 'iPhone';
+                version = userAgent.match(/iPhone OS \d+\_\d+/)[0].replace(/_/g, '.');
+            } else if (userAgent.match(/iPad/i)) {
+                platform = 'iPad';
+                version = userAgent.match(/CPU OS \d+\_\d+/)[0].replace(/_/g, '.');
+            } else if (userAgent.match(/Android/i)) {
+                platform = 'Android';
+                version = navigator.userAgent.match(/Android\s([\d.]+)/)[1];
+                version == 10 ? version = version+'+' : version
+            } else if (userAgent.match(/Linux/i)) {
+                platform = 'Linux';         
+                version = userAgent.match(/\bLinux\s(\S+)\b/)[1];  
+            }
+
+            return `${platform} ${version}`;
+        }catch (error) {
+            // Faça algo com a exceção, como registrar ou relatar
+            console.error("Ocorreu um erro na função getPlatformWithVersion:", error);
+            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
+            return "";
+        }
+    }
+
+
+</script>
+</html>
