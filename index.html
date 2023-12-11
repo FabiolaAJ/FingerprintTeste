@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test</title>
 </head>
@@ -62,8 +61,13 @@
             var navigatorInfo = "";
             for (var prop in navigator) {
                 navigatorInfo += "<br><b>" + prop + ":</b> ";
-                
-                navigatorInfo += navigator[prop] + "<br>";
+                if(typeof navigator[prop] == 'object'){
+                    navigatorInfo += JSON.stringify(navigator[prop]) + "<br>";
+
+                }else{
+                    navigatorInfo += navigator[prop] + "<br>";
+
+                }
                 
                 
             }
