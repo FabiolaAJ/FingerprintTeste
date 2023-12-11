@@ -16,7 +16,9 @@
     <p> Browser  : <b class="js-browser"> </b> </p>
     <p> Language  : <b class="js-language"> </b> </p>
     <p> Navigator userAgent: <b class="js-navigatorUser"> </b></p>
-  
+    <br>
+    <p> <b style="text-decoration: underline;">Informações Navigator:</b> <div style="border:1px solid black;padding-left: 15px;" class="js-navigator"> </div></p>
+
 </body>
 
 <script>
@@ -29,6 +31,8 @@
        var os = getPlatformWithVersion()
        var browser = getBrowserName()
        var language = navigator.language
+       var nav = printInfoNavigator()
+       console.log(nav)
 
 
        document.querySelector(".js-provider").append(provider)
@@ -39,6 +43,7 @@
        document.querySelector(".js-platform").append(platform)
        document.querySelector(".js-manufacturer").append(manufacturer)
        document.querySelector(".js-navigatorUser").append(navigator.userAgent)
+       document.querySelector(".js-navigator").innerHTML = nav
 
        fingerprint(provider,category, model, platform, manufacturer, os, browser, language)
 
@@ -50,6 +55,22 @@
         .then(buffer => {
              return Array.from(new Uint8Array(buffer), byte => ('0' + byte.toString(16)).slice(-2)).join('');
         });
+    }
+    function printInfoNavigator() {
+        try {
+            var navigatorInfo = "";
+            for (var prop in navigator) {
+                navigatorInfo += "<br><b>" + prop + ":</b> ";
+                
+                navigatorInfo += navigator[prop] + "<br>";
+                
+                
+            }
+            return navigatorInfo;
+        }catch (error) {
+            console.error("Ocorreu um erro na função printInforNavigator:", error);
+            return "";
+         }
     }
     function fingerprint(provider,category, model, platform, manufacturer, os, browser, language){
         const fingerprintData = `${provider}${category}${model}${platform}${manufacturer}${os}${browser}${language}`;
@@ -86,24 +107,32 @@
 
     function getBrowserName() {
         try {
-
             const userAgent = navigator.userAgent;
+            console.log(/chrome|chromium|crios/i.test(userAgent))
 
             if (/opr\//i.test(userAgent)) {
-                return 'Opera';
+                var version = userAgent.split("OPR/")[1].split(" ")[0]
+                return 'Opera '+version;
             } else if (/edg/i.test(userAgent)) {
-                return 'Microsoft Edge';
+                var version = userAgent.split("Edg/")[1].split(" ")[0]
+                return 'Microsoft Edge '+version;
             } else if (/chrome|chromium|crios/i.test(userAgent)) {
-                return 'Google Chrome';
+                var version = userAgent.split("Chrome/")[1].split(" ")[0]
+                return 'Google Chrome '+version;
             } else if (/firefox|fxios/i.test(userAgent)) {
-                return 'Mozilla Firefox';
+                var version = userAgent.split("Mozilla/")[1].split(" ")[0]
+                return 'Mozilla Firefox '+version;
             } else if (/safari/i.test(userAgent)) {
-                return 'Apple Safari';
+                var version = userAgent.split("Safari/")[1].split(" ")[0]
+                return 'Apple Safari '+version;
             } else if (/trident/i.test(userAgent)) {
+                var version = userAgent.split("Trident/")[1].split(" ")[0]
                 return 'Microsoft Internet Explorer';
             } else if (/ucbrowser/i.test(userAgent)) {
+                var version = userAgent.split("UCBrowser/")[1].split(" ")[0]
                 return 'UC Browser';
             } else if (/samsungbrowser/i.test(userAgent)) {
+                var version = userAgent.split("SamsungBrowser/")[1].split(" ")[0]
                 return 'Samsung Browser';
             } else {
                 return '';
@@ -186,12 +215,14 @@
                 version = is64Bit ? '64-bit' : '32-bit';
 
             } else if (userAgent.match(/Mac/i)) {
-                platform = 'Mac';
-                version = userAgent.match(/Mac OS X \d+\_\d+/)[0].replace(/_/g, '.');
-            } else if (userAgent.match(/iPhone/i)) {
-                platform = 'iPhone';
-                version = userAgent.match(/iPhone OS \d+\_\d+/)[0].replace(/_/g, '.');
-            } else if (userAgent.match(/iPad/i)) {
+                if (userAgent.match(/iPhone/i)) {
+                    platform = 'iPhone';
+                    version = userAgent.match(/iPhone OS (\d+_\d+_\d+)/)[1].replace(/_/g, '.');
+                } else {
+                    platform = 'Mac';
+                    version = userAgent.match(/Mac OS X (\d+_\d+)/)[1].replace(/_/g, '.');
+                }
+            }  else if (userAgent.match(/iPad/i)) {
                 platform = 'iPad';
                 version = userAgent.match(/CPU OS \d+\_\d+/)[0].replace(/_/g, '.');
             } else if (userAgent.match(/Android/i)) {
