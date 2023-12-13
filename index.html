@@ -133,6 +133,9 @@
             if (/opr|opt|opera/i.test(userAgent)) {
                 browserNavigatorOpt = "OPR|OPT|Opera"; // opções que o navigator pode trazer usando opera
                 browserName = "Opera"
+            } else if (/miuibrowser/i.test(userAgent)) {
+                browserNavigatorOpt = "MiuiBrowser"// opções que o navigator pode trazer usando Safari
+                browserName = "Mi Browser" 
             } else if (/edg|edgios|edga/i.test(userAgent)) {
                 browserNavigatorOpt = "Edg|EdgiOS|EdgA"; // opções que o navigator pode trazer usando edge
                 browserName = "Microsoft Edge"
@@ -204,10 +207,14 @@
                 const userAgent = navigator.userAgent;
 
                 if (/Android/i.test(userAgent)) {
-                    if (/samsungbrowser|SM/i.test(userAgent)) { // possivel identificar samsung por samsungbrowser
+                    if (/samsungbrowser|SM|Galaxy/i.test(userAgent)) { 
                         return 'Samsung'
-                    }else if(/nexus|lg/i.test(userAgent)){
+                    }else if(/lg/i.test(userAgent)){
                         return 'LG'
+                    }else if(/xiaomi|redmi/i.test(userAgent)){
+                        return 'Xiaomi'
+                    }else if(/moto/i.test(userAgent)){
+                        return 'Motorola'
                     }
                 }else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
                     return 'Apple';
