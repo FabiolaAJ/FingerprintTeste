@@ -25,7 +25,7 @@
     document.addEventListener('DOMContentLoaded', function() {
        var provider = "js"
        var category = getCategory()
-       var model = ""
+       var model = getModel()
        var platform = getPlatformDevice()
        var manufacturer = getManufacturerDevice();
        var os = getPlatformWithVersion()
@@ -37,6 +37,7 @@
 
        document.querySelector(".js-provider").append(provider)
        document.querySelector(".js-category").append(category)
+       document.querySelector(".js-model").append(model)
        document.querySelector(".js-os").append(os)
        document.querySelector(".js-browser").append(browser)
        document.querySelector(".js-language").append(language)
@@ -61,10 +62,13 @@
             var navigatorInfo = "";
             for (var prop in navigator) {
                 navigatorInfo += "<br><b>" + prop + ":</b> ";
-                
-                navigatorInfo += navigator[prop] + "<br>";
-                
-                
+                if(typeof navigator[prop] == 'object'){
+                    navigatorInfo += JSON.stringify(navigator[prop]) + "<br>";
+
+                }else{
+                    navigatorInfo += navigator[prop] + "<br>";
+
+                }
             }
             return navigatorInfo;
         }catch (error) {
@@ -87,61 +91,79 @@
 
     function getCategory() {
         try {
-
             const width = window.innerWidth;
 
-            if (width < 768 && navigator.userAgent.includes('Mobile')) {
+            if (width < 768 && (navigator.userAgent.includes('Mobile') || navigator.userAgent.includes('Android')) ) {
                 return "Mobile"; 
-            } else if (width < 1024 && navigator.userAgent.includes('Mobile')) {
+            } else if (width < 1024 && (navigator.userAgent.includes('Mobile') || navigator.userAgent.includes('Tablet') || navigator.userAgent.includes('Android')) ) {
                 return "Tablet"; 
             } else {
                 return "Desktop"; 
             }
         } catch (error) {
-            // Faça algo com a exceção, como registrar ou relatar
             console.error("Ocorreu um erro na função getCategory:", error);
-            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
             return "";
          }
     }
+    function getModel() {
+        var userAgent = navigator.userAgent;
+        var model = "";
+        //Apenas android retorna modelo especifico
+        if (/Android/i.test(userAgent)) {
+            infos = userAgent.match(/\bAndroid[^;]+; ([^)]+)\)/)[0];
+            // Opera Mobi não entrega informação de modelo, foi necessária essa verificação
+            if(!infos.includes("Opera Mobi")){
+                model = infos.split(";")
+                return  model[model.length - 1].replace(")", "") 
+            }
+        }
+        return model
+    }
+    
 
     function getBrowserName() {
         try {
             const userAgent = navigator.userAgent;
-            console.log(/chrome|chromium|crios/i.test(userAgent))
 
-            if (/opr\//i.test(userAgent)) {
-                var version = userAgent.split("OPR/")[1].split(" ")[0]
-                return 'Opera '+version;
-            } else if (/edg/i.test(userAgent)) {
-                var version = userAgent.split("Edg/")[1].split(" ")[0]
-                return 'Microsoft Edge '+version;
+            //gerando variavéis necessárias com string vazia
+            var browserNavigatorOpt = ''
+            var browserName = ''
+            var version = ''
+
+            if (/opr|opt|opera/i.test(userAgent)) {
+                browserNavigatorOpt = "OPR|OPT|Opera"; // opções que o navigator pode trazer usando opera
+                browserName = "Opera"
+            } else if (/edg|edgios|edga/i.test(userAgent)) {
+                browserNavigatorOpt = "Edg|EdgiOS|EdgA"; // opções que o navigator pode trazer usando edge
+                browserName = "Microsoft Edge"
             } else if (/chrome|chromium|crios/i.test(userAgent)) {
-                var version = userAgent.split("Chrome/")[1].split(" ")[0]
-                return 'Google Chrome '+version;
+                browserNavigatorOpt = "Chrome|Chromium|CriOS" // opções que o navigator pode trazer usando chrome
+                browserName = "Google Chrome"
             } else if (/firefox|fxios/i.test(userAgent)) {
-                var version = userAgent.split("Mozilla/")[1].split(" ")[0]
-                return 'Mozilla Firefox '+version;
+                browserNavigatorOpt = "Firefox|FxiOs"  // opções que o navigator pode trazer usando firefox
+                browserName = "Mozilla Firefox"
             } else if (/safari/i.test(userAgent)) {
-                var version = userAgent.split("Safari/")[1].split(" ")[0]
-                return 'Apple Safari '+version;
-            } else if (/trident/i.test(userAgent)) {
-                var version = userAgent.split("Trident/")[1].split(" ")[0]
-                return 'Microsoft Internet Explorer';
-            } else if (/ucbrowser/i.test(userAgent)) {
-                var version = userAgent.split("UCBrowser/")[1].split(" ")[0]
-                return 'UC Browser';
+                browserNavigatorOpt = "Safari"// opções que o navigator pode trazer usando Safari
+                browserName = "Apple Safari" 
             } else if (/samsungbrowser/i.test(userAgent)) {
-                var version = userAgent.split("SamsungBrowser/")[1].split(" ")[0]
-                return 'Samsung Browser';
-            } else {
-                return '';
+                browserNavigatorOpt = "SamsungBrowser" // opções que o navigator pode trazer usando SamsungBrowser
+                browserName = "Samsung Browser"
+            } 
+
+            // Regex para identificar se o número da versão do browser retornou com 3 ou 2 caracteres (versão completa ou versão simples)
+            var validateFullVersion = new RegExp(`(${browserNavigatorOpt})\/(\\d+\\.\\d+\\.\\d+)`, 'i');
+            var validateSimpleVersion = new RegExp(`(${browserNavigatorOpt})\/(\\d+\\.\\d+)`, 'i');
+
+            if(userAgent.match(validateFullVersion)){
+               version = userAgent.match(validateFullVersion)[2];
+            }else if(userAgent.match(validateSimpleVersion)){
+                version =  userAgent.match(validateSimpleVersion)[2];
             }
+            
+            return browserName +' '+version
 
         } catch (error) {
-            // Faça algo com a exceção, como registrar ou relatar
             console.error("Ocorreu um erro na função getBrowserName:", error);
-            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
             return "";
          }
     }
@@ -149,28 +171,28 @@
     function getPlatformDevice() {
         try {
 
-            const userAgent = navigator.userAgent;
+            //regex para identificar a plataforma dentro do navigator.userAgent
+            let infosPlatform = navigator.userAgent.match(/\(([^)]+)\)/)[1];
             let platform = '';
 
-            if (/Win/i.test(userAgent)) {
-                platform = 'Windows';
-            } else if (/Mac/i.test(userAgent)) {
-                platform = 'Mac';
-            } else if (/iPhone/i.test(userAgent)) {
-                platform = 'iPhone';
-            } else if (/iPad/i.test(userAgent)) {
+            if (/Win|Windows/i.test(infosPlatform)) {
+                platform = "Windows"
+            } else if (/Mac|Macintosh/i.test(infosPlatform)) {
+                platform = "Macintosh";
+            } else if (/iPhone/i.test(infosPlatform)) {
+                platform = "iPhone";
+            } else if (/iPad/i.test(infosPlatform)) {
                 platform = 'iPad';
-            } else if (/Android/i.test(userAgent)) {
-                platform = 'Android';
-            } else if (/Linux/i.test(userAgent)) {
-                platform = 'Linux';
+            } else if (/Android/i.test(infosPlatform)) {
+                platform = "Android"
+            } else if (/Linux/i.test(infosPlatform)) {
+                platform = "Linux"
             }
-
+            
             return platform;
+
         } catch (error) {
-            // Faça algo com a exceção, como registrar ou relatar
             console.error("Ocorreu um erro na função getPlatformDevice:", error);
-            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
             return "";
         }
     }
@@ -180,10 +202,10 @@
 
             if (navigator.userAgent) {
                 const userAgent = navigator.userAgent;
+
                 if (/Android/i.test(userAgent)) {
-                    const androidManufacturerMatch = userAgent.match(/\bAndroid[^;]+; ([^)]+)\)/);
-                    return androidManufacturerMatch[1].length > 1 ? androidManufacturerMatch[1] : '';
-                } else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
+                    return ''; // Não é possivel identificar fabricante android pelo navigator
+                }else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
                     return 'Apple';
                 } else if (/Windows NT/i.test(userAgent)) {
                     return 'Microsoft';
@@ -195,9 +217,7 @@
             }
             return '';
         }catch (error) {
-            // Faça algo com a exceção, como registrar ou relatar
             console.error("Ocorreu um erro na função getManufacturerDevice:", error);
-            // Você pode optar por retornar um valor padrão, lançar novamente a exceção, ou tomar outra ação apropriada.
             return "";
         }
     }
@@ -208,33 +228,24 @@
             const userAgent = navigator.userAgent;
             let platform = '';
             let version = '';
+            let info = userAgent.match(/\(([^)]+)\)/)[1].split(';');
 
             if (userAgent.match(/Windows/i)) {
-                platform = 'Windows';
-                const is64Bit = userAgent.includes('Win64') || userAgent.includes('x64');
-                version = is64Bit ? '64-bit' : '32-bit';
-
-            } else if (userAgent.match(/Mac/i)) {
-                if (userAgent.match(/iPhone/i)) {
-                    platform = 'iPhone';
-                    version = userAgent.match(/iPhone OS (\d+_\d+_\d+)/)[1].replace(/_/g, '.');
-                } else {
-                    platform = 'Mac';
-                    version = userAgent.match(/Mac OS X (\d+_\d+)/)[1].replace(/_/g, '.');
-                }
-            }  else if (userAgent.match(/iPad/i)) {
-                platform = 'iPad';
-                version = userAgent.match(/CPU OS \d+\_\d+/)[0].replace(/_/g, '.');
-            } else if (userAgent.match(/Android/i)) {
-                platform = 'Android';
-                version = navigator.userAgent.match(/Android\s([\d.]+)/)[1];
-                version == 10 ? version = version+'+' : version
+                platform = info[0];
+                version = info[1] ? info[1].replace(/_/g, '.') : '';
+            } else if (userAgent.match(/Mac|iPhone|iPad/i)) {
+                platform = info[0];
+                version = info[1] ? info[1].replace(/_/g, '.') : '';
+            }  else if (userAgent.match(/Android/i)) {
+                platform = 'Android'
+                version = userAgent.match(/Android\s+([\d.]+)/i)[1];
             } else if (userAgent.match(/Linux/i)) {
                 platform = 'Linux';         
                 version = userAgent.match(/\bLinux\s(\S+)\b/)[1];  
             }
 
-            return `${platform} ${version}`;
+            return  `${platform}  ${version}` 
+
         }catch (error) {
             // Faça algo com a exceção, como registrar ou relatar
             console.error("Ocorreu um erro na função getPlatformWithVersion:", error);
