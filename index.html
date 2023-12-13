@@ -32,7 +32,6 @@
        var browser = getBrowserName()
        var language = navigator.language
        var nav = printInfoNavigator()
-       console.log(nav)
 
 
        document.querySelector(".js-provider").append(provider)
@@ -110,11 +109,12 @@
         var model = "";
         //Apenas android retorna modelo especifico
         if (/Android/i.test(userAgent)) {
-            infos = userAgent.match(/\bAndroid[^;]+; ([^)]+)\)/)[0];
+            infos = userAgent.match(/\bAndroid[^;]+; ([^)]+)\)/)[0]
             // Opera Mobi não entrega informação de modelo, foi necessária essa verificação
             if(!infos.includes("Opera Mobi")){
-                model = infos.split(";")
-                return  model[model.length - 1].replace(")", "") 
+                var modelInfo = infos.split(";")
+                model = modelInfo[modelInfo.length - 1].trimRight().trimLeft().replace(/[()]/g, '');
+                return model.length > 1  ?  model : ''
             }
         }
         return model
@@ -133,9 +133,15 @@
             if (/opr|opt|opera/i.test(userAgent)) {
                 browserNavigatorOpt = "OPR|OPT|Opera"; // opções que o navigator pode trazer usando opera
                 browserName = "Opera"
+            } else if (/miuibrowser/i.test(userAgent)) {
+                browserNavigatorOpt = "MiuiBrowser"// opções que o navigator pode trazer usando Safari
+                browserName = "Mi Browser" 
             } else if (/edg|edgios|edga/i.test(userAgent)) {
                 browserNavigatorOpt = "Edg|EdgiOS|EdgA"; // opções que o navigator pode trazer usando edge
                 browserName = "Microsoft Edge"
+            } else if (/samsungbrowser/i.test(userAgent)) {
+                browserNavigatorOpt = "SamsungBrowser" // opções que o navigator pode trazer usando SamsungBrowser
+                browserName = "Samsung Browser"
             } else if (/chrome|chromium|crios/i.test(userAgent)) {
                 browserNavigatorOpt = "Chrome|Chromium|CriOS" // opções que o navigator pode trazer usando chrome
                 browserName = "Google Chrome"
@@ -145,9 +151,6 @@
             } else if (/safari/i.test(userAgent)) {
                 browserNavigatorOpt = "Safari"// opções que o navigator pode trazer usando Safari
                 browserName = "Apple Safari" 
-            } else if (/samsungbrowser/i.test(userAgent)) {
-                browserNavigatorOpt = "SamsungBrowser" // opções que o navigator pode trazer usando SamsungBrowser
-                browserName = "Samsung Browser"
             } 
 
             // Regex para identificar se o número da versão do browser retornou com 3 ou 2 caracteres (versão completa ou versão simples)
@@ -178,11 +181,13 @@
             if (/Win|Windows/i.test(infosPlatform)) {
                 platform = "Windows"
             } else if (/Mac|Macintosh/i.test(infosPlatform)) {
-                platform = "Macintosh";
-            } else if (/iPhone/i.test(infosPlatform)) {
-                platform = "iPhone";
-            } else if (/iPad/i.test(infosPlatform)) {
-                platform = 'iPad';
+                if (/iPhone/i.test(infosPlatform)) {
+                    platform = "iPhone";
+                }else if(/iPad/i.test(infosPlatform)){
+                    platform = "iPad"
+                }else{
+                    platform = "Macintosh";
+                }
             } else if (/Android/i.test(infosPlatform)) {
                 platform = "Android"
             } else if (/Linux/i.test(infosPlatform)) {
@@ -204,7 +209,15 @@
                 const userAgent = navigator.userAgent;
 
                 if (/Android/i.test(userAgent)) {
-                    return ''; // Não é possivel identificar fabricante android pelo navigator
+                    if (/samsungbrowser|SM|Galaxy/i.test(userAgent)) { 
+                        return 'Samsung'
+                    }else if(/lg/i.test(userAgent)){
+                        return 'LG'
+                    }else if(/xiaomi|redmi/i.test(userAgent)){
+                        return 'Xiaomi'
+                    }else if(/moto/i.test(userAgent)){
+                        return 'Motorola'
+                    }
                 }else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
                     return 'Apple';
                 } else if (/Windows NT/i.test(userAgent)) {
