@@ -114,7 +114,7 @@
             // Opera Mobi não entrega informação de modelo, foi necessária essa verificação
             if(!infos.includes("Opera Mobi")){
                 model = infos.split(";")
-                return  model[model.length - 1].replace(")", "") 
+                return model[model.length - 1].length > 1  ?  model[model.length - 1].replace(")", "") : ''
             }
         }
         return model
@@ -136,6 +136,9 @@
             } else if (/edg|edgios|edga/i.test(userAgent)) {
                 browserNavigatorOpt = "Edg|EdgiOS|EdgA"; // opções que o navigator pode trazer usando edge
                 browserName = "Microsoft Edge"
+            } else if (/samsungbrowser/i.test(userAgent)) {
+                browserNavigatorOpt = "SamsungBrowser" // opções que o navigator pode trazer usando SamsungBrowser
+                browserName = "Samsung Browser"
             } else if (/chrome|chromium|crios/i.test(userAgent)) {
                 browserNavigatorOpt = "Chrome|Chromium|CriOS" // opções que o navigator pode trazer usando chrome
                 browserName = "Google Chrome"
@@ -145,9 +148,6 @@
             } else if (/safari/i.test(userAgent)) {
                 browserNavigatorOpt = "Safari"// opções que o navigator pode trazer usando Safari
                 browserName = "Apple Safari" 
-            } else if (/samsungbrowser/i.test(userAgent)) {
-                browserNavigatorOpt = "SamsungBrowser" // opções que o navigator pode trazer usando SamsungBrowser
-                browserName = "Samsung Browser"
             } 
 
             // Regex para identificar se o número da versão do browser retornou com 3 ou 2 caracteres (versão completa ou versão simples)
@@ -204,7 +204,9 @@
                 const userAgent = navigator.userAgent;
 
                 if (/Android/i.test(userAgent)) {
-                    return ''; // Não é possivel identificar fabricante android pelo navigator
+                    if (/samsungbrowser|SM/i.test(userAgent)) { // possivel identificar samsung por samsungbrowser
+                        return 'Samsung'
+                    }
                 }else if (/iPhone|iPad|iPod/i.test(userAgent) || /Macintosh/i.test(userAgent)) {
                     return 'Apple';
                 } else if (/Windows NT/i.test(userAgent)) {
